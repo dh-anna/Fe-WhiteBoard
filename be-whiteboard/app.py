@@ -147,7 +147,7 @@ def disconnect(sid):
 @sio.event
 def draw(sid, data):
     # Broadcast the message to the room of the current whiteboard
-    sio.emit('draw', {'username': user_names.get(sid, 'Unknown'), 'cords': data['cords']}, room=data['whiteboard_id'])
+    sio.emit('draw', data, room=data['whiteboard_id'])
 
 if __name__ == '__main__':
     # Use the eventlet server to run the Flask application with Socket.IO support
