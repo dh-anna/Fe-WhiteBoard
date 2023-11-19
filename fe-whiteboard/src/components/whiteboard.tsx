@@ -85,7 +85,33 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
   };
 
   return (
-    <Paper elevation={3} sx={{ m: 4, p: 4, height: "100%", width: "100%" }}>
+      <Paper elevation={3} sx={{ m: 4, p: 4, height: "80%", width: "100%" }}>
+        <div style={{ marginTop: "5px" }}>
+          <Button
+              variant={currentTool === "pen" ? "contained" : "outlined"}
+              color="primary"
+              onClick={() => switchTool("pen")}
+          >
+            Pen
+          </Button>
+          <Button
+              variant={currentTool === "eraser" ? "contained" : "outlined"}
+              color="secondary"
+              onClick={() => switchTool("eraser")}
+              style={{ marginLeft: "10px" }}
+              startIcon={<CreateIcon />}
+          >
+            Eraser
+          </Button>
+          <Button
+              variant="contained"
+              color="primary"
+              onClick={handleClear}
+              style={{ marginLeft: "10px" }}
+          >
+            Clear
+          </Button>
+        </div>
       <canvas
         ref={canvasRef}
         onMouseDown={handleMouseDown}
@@ -93,32 +119,7 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
         onMouseUp={handleMouseUp}
         style={{ border: "1px solid #ccc" }}
       />
-      <div style={{ marginTop: "10px" }}>
-        <Button
-          variant={currentTool === "pen" ? "contained" : "outlined"}
-          color="primary"
-          onClick={() => switchTool("pen")}
-        >
-          Pen
-        </Button>
-        <Button
-          variant={currentTool === "eraser" ? "contained" : "outlined"}
-          color="secondary"
-          onClick={() => switchTool("eraser")}
-          style={{ marginLeft: "10px" }}
-          startIcon={<CreateIcon />}
-        >
-          Eraser
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleClear}
-          style={{ marginLeft: "10px" }}
-        >
-          Clear
-        </Button>
-      </div>
+
     </Paper>
   );
 };
