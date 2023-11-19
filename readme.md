@@ -1,8 +1,8 @@
-# Whiteboard AI - Generative Masterpiece
+# collabarative whiteboard
 
 ## Task Identifier and Title
-**Task ID:** WB-GEN-001
-**Title:** Creating Whiteboard Application with Generative AI
+**Task ID:**#23_03d
+**Title:** Collabarative whiteboard
 
 ## Submitters
 - Bálint Kostyál
