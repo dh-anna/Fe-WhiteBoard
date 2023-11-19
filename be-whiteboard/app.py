@@ -151,4 +151,4 @@ def draw(sid, data):
 
 if __name__ == '__main__':
     # Use the eventlet server to run the Flask application with Socket.IO support
-    eventlet.wsgi.server(eventlet.listen(('127.0.0.1', 5000)), app)
+    eventlet.wsgi.server(eventlet.listen((os.getenv("BACKEND_URL", "127.0.0.1"), int(os.getenv("BACKEND_PORT", 5000)))), app)
