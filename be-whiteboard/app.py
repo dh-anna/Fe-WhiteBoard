@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
+from flask_cors import cross_origin
 from flask_socketio import SocketIO, emit, join_room
 from flask_sqlalchemy import SQLAlchemy
 
@@ -38,11 +39,13 @@ with app.app_context():
 
 # Routes
 @app.route('/')
+@cross_origin()
 def index():
     return jsonify({'message': 'whiteboard api'})
 
 
 @app.route('/whiteboard')
+@cross_origin()
 def list_whiteboards():
     whiteboards = Whiteboard.query.all()
     whiteboard_list = [wb_to_dict(wb) for wb in whiteboards]
@@ -50,6 +53,7 @@ def list_whiteboards():
 
 
 @app.route('/whiteboard/create', methods=['POST'])
+@cross_origin()
 def create_whiteboard():
     name = request.form['name']
     wb = Whiteboard(name=name)
@@ -59,8 +63,10 @@ def create_whiteboard():
 
 
 @app.route('/whiteboard/delete/<int:whiteboard_id>', methods=['POST'])
-def delete_whiteboard(whiteboard_id):
-    wb = Whiteboard.query.get(whiteboard_id)
+@cross_origin()
+def delete_whiteboard():
+    wb_id = request.form['id']
+    wb = Whiteboard.query.get(wb_id)
     if wb:
         db.session.delete(wb)
         db.session.commit()
@@ -69,6 +75,7 @@ def delete_whiteboard(whiteboard_id):
 
 
 @app.route('/whiteboard/<int:whiteboard_id>')
+@cross_origin()
 def whiteboard(whiteboard_id):
     wb = Whiteboard.query.get(whiteboard_id)
     if wb:
@@ -78,6 +85,7 @@ def whiteboard(whiteboard_id):
 
 # WebSocket events
 @socketio.on('connect')
+@cross_origin()
 def handle_connect():
     user_names[request.sid] = generate_funky_username()
     emit('user_name', {'user_name': user_names[request.sid]})
@@ -85,6 +93,7 @@ def handle_connect():
 
 
 @socketio.on('disconnect')
+@cross_origin()
 def handle_disconnect():
     user_name = user_names.pop(request.sid, None)
     if user_name:
@@ -92,6 +101,7 @@ def handle_disconnect():
 
 
 @socketio.on('join_whiteboard')
+@cross_origin()
 def handle_join_whiteboard(data):
     whiteboard_id = data['whiteboard_id']
     room = f'whiteboard_{whiteboard_id}'
@@ -101,6 +111,7 @@ def handle_join_whiteboard(data):
 
 
 @socketio.on('draw_event')
+@cross_origin()
 def handle_draw_event(data):
     whiteboard_id = data['whiteboard_id']
     room = f'whiteboard_{whiteboard_id}'
