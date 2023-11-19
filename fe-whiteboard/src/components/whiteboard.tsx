@@ -1,11 +1,10 @@
-// Whiteboard.tsx
-import React, { useRef, useEffect, useState } from "react";
-import { Button, Paper } from "@mui/material";
-import CreateIcon from "@mui/icons-material/Create";
+import React, { useEffect, useRef, useState } from "react";
+import { Box, Paper, Stack } from "@mui/material";
+import { ToolSelector } from "./toolSelector";
 
 interface WhiteboardProps {}
 
-type DrawingTool = "pen" | "eraser";
+export type DrawingTool = "pen" | "eraser";
 
 export const Whiteboard: React.FC<WhiteboardProps> = (
   props: WhiteboardProps,
@@ -85,41 +84,22 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
   };
 
   return (
-      <Paper elevation={3} sx={{ m: 4, p: 4, height: "80%", width: "100%" }}>
-        <div style={{ marginTop: "5px" }}>
-          <Button
-              variant={currentTool === "pen" ? "contained" : "outlined"}
-              color="primary"
-              onClick={() => switchTool("pen")}
-          >
-            Pen
-          </Button>
-          <Button
-              variant={currentTool === "eraser" ? "contained" : "outlined"}
-              color="secondary"
-              onClick={() => switchTool("eraser")}
-              style={{ marginLeft: "10px" }}
-              startIcon={<CreateIcon />}
-          >
-            Eraser
-          </Button>
-          <Button
-              variant="contained"
-              color="primary"
-              onClick={handleClear}
-              style={{ marginLeft: "10px" }}
-          >
-            Clear
-          </Button>
-        </div>
-      <canvas
-        ref={canvasRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        style={{ border: "1px solid #ccc" }}
-      />
-
+    <Paper elevation={3} sx={{ flexGrow: 1, m: 2, p: 2 }}>
+      <Stack alignItems="center" gap={2}>
+        <ToolSelector
+          currentTool={currentTool}
+          onPenSelect={() => switchTool("pen")}
+          onEraserSelect={() => switchTool("eraser")}
+          onClearPage={handleClear}
+        />
+        <canvas
+          ref={canvasRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          style={{ border: "1px solid #ccc" }}
+        />
+      </Stack>
     </Paper>
   );
 };
