@@ -1,15 +1,21 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import Whiteboard from "./components/whiteboard";
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+import HomePage from './components/home';
 
 function App() {
-  return (
-      <div>
-        <h1>Whiteboard App</h1>
-        <Whiteboard width={800} height={600} />
-      </div>
-  );
+    return (
+        <div className="App">
+            <header className="App-header">
+                <h1>React Whiteboard</h1>
+            </header>
+            <main>
+                <Router>
+                    <Route path="/" element={<HomePage />} />
+                </Router>
+            </main>
+        </div>
+    );
 }
 
 export default App;
