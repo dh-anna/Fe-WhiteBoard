@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 import { ToolSelector } from "./toolSelector";
 import { useSocket } from "../contexts/SocketContext";
 
@@ -27,10 +27,34 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
     });
     socket.emit("connect_to_whiteboard", { whiteboard_id: props.whiteBoardId });
     socket.on("draw", (data) => {
-      console.log(data);
-      if (context) {
+      if (!context) return;
+      if (data.username === username) return;
+
+      if (data.type === "erase") {
+        context.strokeStyle = "#fff";
+        context.lineWidth = 10;
+      } else {
+        context.strokeStyle = "#000";
+        context.lineWidth = 2;
+      }
+
+      if (data.type === "clear") {
+        context.clearRect(0, 0, canvasSize.width, canvasSize.height);
+        return;
+      }
+      if (data.type === "start") {
+        context.beginPath();
+        context.moveTo(data.cords.x, data.cords.y);
+        return;
+      }
+      if (data.type === "draw" || data.type === "erase") {
         context.lineTo(data.cords.x, data.cords.y);
         context.stroke();
+        return;
+      }
+      if (data.type === "stop") {
+        context.closePath();
+        return;
       }
     });
   }, [socket]);
@@ -55,21 +79,23 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
 
       // Initial setup
       updateCanvasSize();
-
-      // Event listener for window resize
-      window.addEventListener("resize", updateCanvasSize);
-
-      // Cleanup the event listener on component unmount
-      return () => {
-        window.removeEventListener("resize", updateCanvasSize);
-      };
     }
   }, []);
+
+  const emitDrawEvent = (type: string, cords?: { x: number; y: number }) => {
+    socket?.emit("draw", {
+      type,
+      cords,
+      whiteboard_id: props.whiteBoardId,
+      username,
+    });
+  };
 
   const handleClear = () => {
     if (context) {
       context.clearRect(0, 0, canvasSize.width, canvasSize.height);
     }
+    emitDrawEvent("clear");
   };
 
   const handleMouseDown = (
@@ -82,6 +108,10 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
         e.clientX - canvasRef.current!.offsetLeft,
         e.clientY - canvasRef.current!.offsetTop,
       );
+      emitDrawEvent("start", {
+        x: e.clientX - canvasRef.current!.offsetLeft,
+        y: e.clientY - canvasRef.current!.offsetTop,
+      });
     }
   };
 
@@ -89,37 +119,31 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
   ) => {
     if (isDrawing && context) {
+      const cords = {
+        x: e.clientX - canvasRef.current!.offsetLeft,
+        y: e.clientY - canvasRef.current!.offsetTop,
+      };
+
       if (currentTool === "pen") {
-        context.lineTo(
-          e.clientX - canvasRef.current!.offsetLeft,
-          e.clientY - canvasRef.current!.offsetTop,
-        );
+        context.lineTo(cords.x, cords.y);
         context.stroke();
-        socket?.emit("draw", {
-          cords: {
-            x: e.clientX - canvasRef.current!.offsetLeft,
-            y: e.clientY - canvasRef.current!.offsetTop,
-          },
-          whiteboard_id: props.whiteBoardId,
-        });
+        emitDrawEvent("draw", cords);
       } else if (currentTool === "eraser") {
-        // Use white color to simulate erasing
         context.strokeStyle = "#fff";
         context.lineWidth = 10;
-        context.lineTo(
-          e.clientX - canvasRef.current!.offsetLeft,
-          e.clientY - canvasRef.current!.offsetTop,
-        );
+        context.lineTo(cords.x, cords.y);
         context.stroke();
-        // Reset the stroke style and line width
         context.strokeStyle = "#000";
         context.lineWidth = 2;
+        emitDrawEvent("erase", cords);
       }
     }
   };
 
   const handleMouseUp = () => {
     setIsDrawing(false);
+    context?.closePath();
+    emitDrawEvent("stop");
   };
 
   const switchTool = (tool: DrawingTool) => {
@@ -139,17 +163,6 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
   return (
     <Box sx={{ flexGrow: 1, m: 2, p: 2, display: "flex" }}>
       <Stack alignItems="center" gap={2} sx={{ width: "100%" }}>
-        <Button
-          variant="contained"
-          onClick={() => {
-            socket?.emit("draw", {
-              cords: { x: 100, y: 100 },
-              whiteboard_id: props.whiteBoardId,
-            });
-          }}
-        >
-          Send test
-        </Button>
         <Stack flexDirection="row" justifyContent="space-between" width="100%">
           <Typography variant="h5">Name: {username ?? "-"}</Typography>
           <ToolSelector
@@ -161,7 +174,11 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
         </Stack>
         <Paper
           elevation={2}
-          sx={{ width: "100%", height: "calc(100vh - 180px)" }}
+          sx={{
+            width: "100%",
+            height: "calc(100vh - 180px)",
+            overflow: "hidden",
+          }}
         >
           <canvas
             ref={canvasRef}
