@@ -1,14 +1,21 @@
 import React, { useState } from "react";
 import { Box, TextField, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import { config } from "../config";
 
 export const NewWhiteboard: React.FC = () => {
   const [whiteboardId, setWhiteboardId] = useState<number | null>(null);
   const [whiteboardName, setWhiteboardName] = useState<string>("");
 
   const handleNewWhiteboard = () => {
-    const newId = Math.floor(Math.random() * 1000000);
-    setWhiteboardId(newId);
+    fetch(`${config.backendUrl}`, {
+      method: "POST",
+      body: JSON.stringify({ name: whiteboardName }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setWhiteboardId(data.id);
+      });
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,30 +23,30 @@ export const NewWhiteboard: React.FC = () => {
   };
 
   return (
-      <Box sx={styles.container}>
-        <h2 style={styles.title}>Create New Whiteboard</h2>
-        <TextField
-            label="Whiteboard Name"
-            variant="outlined"
-            value={whiteboardName}
-            onChange={handleNameChange}
-            sx={styles.textInput}
-        />
-        <Button
-            style={styles.button}
-            onClick={handleNewWhiteboard}
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-        >
-          Create Whiteboard
-        </Button>
-        {whiteboardId && (
-            <p style={styles.message}>
-              New Whiteboard "{whiteboardName}" created with ID: {whiteboardId}
-            </p>
-        )}
-      </Box>
+    <Box sx={styles.container}>
+      <h2 style={styles.title}>Create New Whiteboard</h2>
+      <TextField
+        label="Whiteboard Name"
+        variant="outlined"
+        value={whiteboardName}
+        onChange={handleNameChange}
+        sx={styles.textInput}
+      />
+      <Button
+        style={styles.button}
+        onClick={handleNewWhiteboard}
+        variant="contained"
+        color="primary"
+        startIcon={<AddIcon />}
+      >
+        Create Whiteboard
+      </Button>
+      {whiteboardId && (
+        <p style={styles.message}>
+          New Whiteboard "{whiteboardName}" created with ID: {whiteboardId}
+        </p>
+      )}
+    </Box>
   );
 };
 

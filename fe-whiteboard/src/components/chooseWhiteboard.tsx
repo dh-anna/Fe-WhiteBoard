@@ -1,141 +1,146 @@
 import React, { useState } from "react";
 import {
-    Box,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
+  Box,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stack,
+  Paper,
+  IconButton,
+  Typography,
 } from "@mui/material";
+import { useGet } from "../hooks/useGet";
+import { config } from "../config";
+import { WhiteBoard } from "../types/WhiteBoard";
+import { MdDeleteOutline } from "react-icons/md";
+import { usePost } from "../hooks/usePost";
+
+type WhiteBoardCardPros = {
+  name: string;
+  onOpenClick: () => void;
+  onDeleteClick: () => void;
+};
+function WhiteBoardCard(props: WhiteBoardCardPros) {
+  return (
+    <Paper elevation={2} sx={{ p: 2 }}>
+      <Typography variant="h5" textAlign="center" p={1}>
+        {props.name}
+      </Typography>
+      <Stack
+        gap={2}
+        direction="row"
+        justifyContent="space-between"
+        width="100%"
+      >
+        <Button variant="contained" onClick={props.onOpenClick}>
+          Open
+        </Button>
+        <IconButton
+          aria-label="delete"
+          size="medium"
+          onClick={props.onDeleteClick}
+          color="error"
+        >
+          <MdDeleteOutline />
+        </IconButton>
+      </Stack>
+    </Paper>
+  );
+}
 
 export const ChooseWhiteboard: React.FC = () => {
-    const [selectedWhiteboard, setSelectedWhiteboard] = useState<number | null>(
-        null
-    );
-    const [openDialog, setOpenDialog] = useState(false);
+  const [whiteboardToDelete, setWhiteboardToDelete] = useState<number | null>(
+    null,
+  );
+  const [openDialog, setOpenDialog] = useState(false);
 
-    const handleChooseWhiteboard = (id: number) => {
-        setSelectedWhiteboard(id);
-    };
+  const { data: whiteBoards, refetch: refetchBoardList } = useGet<WhiteBoard[]>(
+    `${config.backendUrl}/whiteboard`,
+  );
 
-    const handleDeleteWhiteboard = () => {
-        // Implement your logic for deleting a whiteboard
-        console.log(`Deleted whiteboard ${selectedWhiteboard}`);
-        setSelectedWhiteboard(null);
-        handleCloseDialog();
-    };
+  const [deleteWhiteBoard] = usePost(`${config.backendUrl}/whiteboard/delete`);
 
-    const handleOpenDialog = () => {
-        setOpenDialog(true);
-    };
+  const handleDeleteWhiteboard = async () => {
+    const bodyFormData = new FormData();
+    bodyFormData.append("id", String(whiteboardToDelete));
+    await deleteWhiteBoard(bodyFormData);
+    console.log(`Deleted whiteboard ${whiteboardToDelete}`);
+    refetchBoardList();
+    setWhiteboardToDelete(null);
+    handleCloseDialog();
+  };
 
-    const handleCloseDialog = () => {
-        setOpenDialog(false);
-    };
+  const handleOpenDialog = (id: number) => {
+    setWhiteboardToDelete(id);
+    setOpenDialog(true);
+  };
 
-    return (
-        <Box sx={styles.container}>
-            <h2 style={styles.title}>Choose a Whiteboard</h2>
-            <div style={styles.cardContainer}>
-                <Box sx={styles.card}>
-                    <Button
-                        style={styles.button}
-                        onClick={() => handleChooseWhiteboard(1)}
-                    >
-                        Whiteboard 1
-                    </Button>
-                    <Button
-                        sx={styles.deleteButton}
-                        onClick={() => {
-                            handleChooseWhiteboard(1);
-                            handleOpenDialog();
-                        }}
-                    >
-                        Delete
-                    </Button>
-                </Box>
-                <Box sx={styles.card}>
-                    <Button
-                        style={styles.button}
-                        onClick={() => handleChooseWhiteboard(2)}
-                    >
-                        Whiteboard 2
-                    </Button>
-                    <Button
-                        sx={styles.deleteButton}
-                        onClick={() => {
-                            handleChooseWhiteboard(2);
-                            handleOpenDialog();
-                        }}
-                    >
-                        Delete
-                    </Button>
-                </Box>
-                {/* Add more buttons for additional whiteboards */}
-            </div>
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
 
-            {/* Confirmation Dialog */}
-            <Dialog open={openDialog} onClose={handleCloseDialog}>
-                <DialogTitle>Are you sure?</DialogTitle>
-                <DialogContent>
-                    <p>Do you really want to delete this whiteboard?</p>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseDialog} color="primary">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleDeleteWhiteboard} color="primary">
-                        Yes, Delete
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
-    );
+  return (
+    <Box sx={styles.container}>
+      <h2 style={styles.title}>Choose a Whiteboard</h2>
+      <Stack direction="row" flexWrap="wrap" gap={2}>
+        {whiteBoards?.map((whiteBoard) => (
+          <WhiteBoardCard
+            key={whiteBoard.id}
+            name={whiteBoard.name}
+            onOpenClick={() =>
+              console.log("Open whiteboard with id: ", whiteBoard.id)
+            }
+            onDeleteClick={() => {
+              handleOpenDialog(whiteBoard.id);
+            }}
+          />
+        ))}
+      </Stack>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Are you sure?</DialogTitle>
+        <DialogContent>
+          <p>Do you really want to delete this whiteboard?</p>
+        </DialogContent>
+        <DialogActions>
+          <Stack flexDirection="row" gap={1}>
+            <Button
+              onClick={handleCloseDialog}
+              variant="contained"
+              color="primary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleDeleteWhiteboard()}
+              variant="contained"
+              color="error"
+            >
+              Yes, Delete
+            </Button>
+          </Stack>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
 };
 
 const styles = {
-    container: {
-        textAlign: "center",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-    },
-    title: {
-        fontSize: "24px",
-        fontWeight: "bold",
-        marginBottom: "20px",
-    },
-    cardContainer: {
-        display: "flex",
-        justifyContent: "center",
-    },
-    card: {
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-        margin: "10px",
-        padding: "10px",
-        position: "relative",
-    },
-    button: {
-        padding: "10px 20px",
-        fontSize: "16px",
-        backgroundColor: "#3498db",
-        color: "#fff",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-        marginRight: "8px",
-    },
-    deleteButton: {
-        position: "absolute",
-        top: "0px",
-        right: "0px",
-        padding: "5px 10px",
-        fontSize: "8px",
-        backgroundColor: "#e74c3c",
-        color: "#fff",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-    },
+  container: {
+    textAlign: "center",
+    padding: "20px",
+    fontFamily: "Arial, sans-serif",
+  },
+  title: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    marginBottom: "20px",
+  },
+  cardContainer: {
+    display: "flex",
+    justifyContent: "center",
+  },
 };

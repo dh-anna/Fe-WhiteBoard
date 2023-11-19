@@ -1,7 +1,7 @@
 import React from "react";
 import { NewWhiteboard } from "../components/newWhiteboard";
 import { ChooseWhiteboard } from "../components/chooseWhiteboard";
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Paper, Stack, Typography } from "@mui/material";
 
 export const HomePage: React.FC = () => {
   return (

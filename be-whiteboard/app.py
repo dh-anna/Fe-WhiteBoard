@@ -62,7 +62,7 @@ def create_whiteboard():
     return {'message': 'successfully created whiteboard', 'whiteboard': wb_to_dict(wb)}
 
 
-@app.route('/whiteboard/delete/<int:whiteboard_id>', methods=['POST'])
+@app.route('/whiteboard/delete', methods=['POST'])
 @cross_origin()
 def delete_whiteboard():
     wb_id = request.form['id']
