@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Paper, Stack } from "@mui/material";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { ToolSelector } from "./toolSelector";
 import { useSocket } from "../contexts/SocketContext";
 
@@ -18,7 +18,22 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentTool, setCurrentTool] = useState<DrawingTool>("pen");
 
-  const { socket } = useSocket();
+  const { socket, username } = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("message", (data) => {
+      console.log(data);
+    });
+    socket.emit("connect_to_whiteboard", { whiteboard_id: props.whiteBoardId });
+    socket.on("draw", (data) => {
+      console.log(data);
+      if (context) {
+        context.lineTo(data.cords.x, data.cords.y);
+        context.stroke();
+      }
+    });
+  }, [socket]);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -80,6 +95,13 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
           e.clientY - canvasRef.current!.offsetTop,
         );
         context.stroke();
+        socket?.emit("draw", {
+          cords: {
+            x: e.clientX - canvasRef.current!.offsetLeft,
+            y: e.clientY - canvasRef.current!.offsetTop,
+          },
+          whiteboard_id: props.whiteBoardId,
+        });
       } else if (currentTool === "eraser") {
         // Use white color to simulate erasing
         context.strokeStyle = "#fff";
@@ -117,12 +139,26 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
   return (
     <Box sx={{ flexGrow: 1, m: 2, p: 2, display: "flex" }}>
       <Stack alignItems="center" gap={2} sx={{ width: "100%" }}>
-        <ToolSelector
-          currentTool={currentTool}
-          onPenSelect={() => switchTool("pen")}
-          onEraserSelect={() => switchTool("eraser")}
-          onClearPage={handleClear}
-        />
+        <Button
+          variant="contained"
+          onClick={() => {
+            socket?.emit("draw", {
+              cords: { x: 100, y: 100 },
+              whiteboard_id: props.whiteBoardId,
+            });
+          }}
+        >
+          Send test
+        </Button>
+        <Stack flexDirection="row" justifyContent="space-between" width="100%">
+          <Typography variant="h5">Name: {username ?? "-"}</Typography>
+          <ToolSelector
+            currentTool={currentTool}
+            onPenSelect={() => switchTool("pen")}
+            onEraserSelect={() => switchTool("eraser")}
+            onClearPage={handleClear}
+          />
+        </Stack>
         <Paper
           elevation={2}
           sx={{ width: "100%", height: "calc(100vh - 180px)" }}

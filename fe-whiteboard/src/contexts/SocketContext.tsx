@@ -8,6 +8,7 @@ interface SocketContextProps {
 
 type SocketContextType = {
   socket?: Socket;
+  username?: string;
 };
 
 export const SocketContext = createContext<SocketContextType | undefined>(
@@ -24,22 +25,33 @@ export const useSocket = (): SocketContextType => {
 
 export const SocketProvider: React.FC<SocketContextProps> = ({ children }) => {
   const [socket, setSocket] = useState<Socket>();
+  const [username, setUsername] = useState<string>();
 
   useEffect(() => {
+    if (socket) return;
     const newSocket = io(config.backendUrl, { transports: ["websocket"] }); // Replace with your Socket.io server URL
+
+    newSocket.on("username", (data) => {
+      console.log("Username: ", data);
+      setUsername(data.username);
+    });
 
     newSocket.on("connect", () => {
       console.log("Connected");
       setSocket(newSocket);
     });
 
-    //return () => newSocket.close();
+    return () => {
+      console.log("Disconnecting socket");
+      newSocket.disconnect();
+    };
   }, []);
 
   return (
     <SocketContext.Provider
       value={{
         socket: socket!,
+        username,
       }}
     >
       {children}
