@@ -1,10 +1,13 @@
 import os
+import socketio
 
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
-from flask_cors import cross_origin
-from flask_socketio import SocketIO, emit, join_room
+from flask_cors import cross_origin, CORS
 from flask_sqlalchemy import SQLAlchemy
+
+
+import eventlet  # Import the eventlet library
 
 from user_name import generate_funky_username
 
@@ -12,9 +15,16 @@ from user_name import generate_funky_username
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-socketio = SocketIO(app, cors_allowed_origins='*')
+
+# Create a new Socket.IO server
+sio = socketio.Server(cors_allowed_origins="*", async_mode='eventlet')
+
+# Attach the Socket.IO server to the Flask application
+app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app)
+
 db = SQLAlchemy(app)
 
 # Dictionary to store usernames
@@ -83,40 +93,62 @@ def whiteboard(whiteboard_id):
     return {'message': 'whiteboard not exists'}
 
 
-# WebSocket events
-@socketio.on('connect')
-@cross_origin()
-def handle_connect():
-    user_names[request.sid] = generate_funky_username()
-    emit('user_name', {'user_name': user_names[request.sid]})
-    print(f'User {user_names[request.sid]} connected')
+# Define a function to handle the "message" event
+@sio.event
+def message(sid, data):
+    print(f"Message from {sid}: {data}")
+    # Send the message back to the client
+    sio.send(sid, "Server received your message")
 
 
-@socketio.on('disconnect')
-@cross_origin()
-def handle_disconnect():
-    user_name = user_names.pop(request.sid, None)
-    if user_name:
-        print(f'User {user_name} disconnected')
+# Define a function to handle the connection event
+@sio.event
+def connect(sid, environ):
+    print(f"Client connected: {sid}")
+
+    # Generate a funky username for the connected user
+    username = generate_funky_username()
+
+    # Store the username in the dictionary for future reference
+    user_names[sid] = username
+
+    # Send the username back to the client
+    sio.emit('username', {'username': username}, room=sid)
 
 
-@socketio.on('join_whiteboard')
-@cross_origin()
-def handle_join_whiteboard(data):
-    whiteboard_id = data['whiteboard_id']
-    room = f'whiteboard_{whiteboard_id}'
-    join_room(room)
-    emit('whiteboard_joined', {'message': 'You have joined the whiteboard.'}, room=request.sid)
-    emit('user_list', {'users': list(user_names.values())}, room=room)
+# Define a function to handle the "connect_to_whiteboard" event
+@sio.event
+def connect_to_whiteboard(sid, data):
+    whiteboard_id = data.get('whiteboard_id')
+    with app.app_context():
+        wb = Whiteboard.query.get(whiteboard_id)
+        if wb:
+            # Join the room for the specified whiteboard
+            sio.enter_room(sid, str(whiteboard_id))
+            sio.emit('message', {'text': f'User: {user_names[sid]} Connected to whiteboard {wb.name}'}, room=whiteboard_id)
+        else:
+            sio.emit('message', {'text': 'Whiteboard not found'}, room=whiteboard_id)
 
 
-@socketio.on('draw_event')
-@cross_origin()
-def handle_draw_event(data):
-    whiteboard_id = data['whiteboard_id']
-    room = f'whiteboard_{whiteboard_id}'
-    emit('draw_event', data, room=room, include_self=False)
+# Define a function to handle the disconnection event
+@sio.event
+def disconnect(sid):
+    print(f"Client disconnected: {sid}")
 
+    # Remove the username from the dictionary upon disconnection
+    if sid in user_names:
+        del user_names[sid]
+
+    # Leave any whiteboard rooms the user might have joined
+    sio.leave_room(sid, None)
+
+
+# Define a function to handle the "message" event
+@sio.event
+def draw(sid, data):
+    # Broadcast the message to the room of the current whiteboard
+    sio.emit('draw', {'username': user_names.get(sid, 'Unknown'), 'cords': data['cords']}, room=data['whiteboard_id'])
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    # Use the eventlet server to run the Flask application with Socket.IO support
+    eventlet.wsgi.server(eventlet.listen(('127.0.0.1', 5000)), app)
