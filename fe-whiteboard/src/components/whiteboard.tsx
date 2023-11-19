@@ -11,28 +11,45 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
 ) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentTool, setCurrentTool] = useState<DrawingTool>("pen");
-
-  const height = 640;
-  const width = 480;
 
   useEffect(() => {
     if (canvasRef.current) {
       const canvas = canvasRef.current;
-      canvas.width = width;
-      canvas.height = height;
 
       const ctx = canvas.getContext("2d");
       if (ctx) {
         setContext(ctx);
       }
+
+      // Function to update canvas size
+      const updateCanvasSize = () => {
+        const parent = canvasRef.current?.parentElement;
+        console.log(parent?.clientWidth, parent?.clientHeight);
+        setCanvasSize({
+          width: parent?.clientWidth || 0,
+          height: parent?.clientHeight || 0,
+        });
+      };
+
+      // Initial setup
+      updateCanvasSize();
+
+      // Event listener for window resize
+      window.addEventListener("resize", updateCanvasSize);
+
+      // Cleanup the event listener on component unmount
+      return () => {
+        window.removeEventListener("resize", updateCanvasSize);
+      };
     }
-  }, [width, height]);
+  }, []);
 
   const handleClear = () => {
     if (context) {
-      context.clearRect(0, 0, width, height);
+      context.clearRect(0, 0, canvasSize.width, canvasSize.height);
     }
   };
 
@@ -83,23 +100,37 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
     setCurrentTool(tool);
   };
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvasRef.current?.getContext("2d");
+
+    if (!canvas || !context || !canvasRef.current) return;
+    // Update canvas size
+    canvasRef.current.width = canvasSize.width;
+    canvasRef.current.height = canvasSize.height;
+  }, [canvasSize]); // Run this effect whenever canvasSize changes
+
   return (
-    <Paper elevation={3} sx={{ flexGrow: 1, m: 2, p: 2 }}>
-      <Stack alignItems="center" gap={2}>
+    <Box sx={{ flexGrow: 1, m: 2, p: 2, display: "flex" }}>
+      <Stack alignItems="center" gap={2} sx={{ width: "100%" }}>
         <ToolSelector
           currentTool={currentTool}
           onPenSelect={() => switchTool("pen")}
           onEraserSelect={() => switchTool("eraser")}
           onClearPage={handleClear}
         />
-        <canvas
-          ref={canvasRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          style={{ border: "1px solid #ccc" }}
-        />
+        <Paper
+          elevation={2}
+          sx={{ width: "100%", height: "calc(100vh - 180px)" }}
+        >
+          <canvas
+            ref={canvasRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+          />
+        </Paper>
       </Stack>
-    </Paper>
+    </Box>
   );
 };
