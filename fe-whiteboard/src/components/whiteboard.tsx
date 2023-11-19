@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Paper, Stack } from "@mui/material";
 import { ToolSelector } from "./toolSelector";
+import { useSocket } from "../contexts/SocketContext";
 
-interface WhiteboardProps {}
+interface WhiteboardProps {
+  whiteBoardId?: string;
+}
 
 export type DrawingTool = "pen" | "eraser";
 
@@ -14,6 +17,8 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentTool, setCurrentTool] = useState<DrawingTool>("pen");
+
+  const { socket } = useSocket();
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -27,7 +32,6 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
       // Function to update canvas size
       const updateCanvasSize = () => {
         const parent = canvasRef.current?.parentElement;
-        console.log(parent?.clientWidth, parent?.clientHeight);
         setCanvasSize({
           width: parent?.clientWidth || 0,
           height: parent?.clientHeight || 0,

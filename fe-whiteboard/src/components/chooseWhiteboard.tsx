@@ -13,12 +13,15 @@ import { config } from "../config";
 import { WhiteBoard } from "../types/WhiteBoard";
 import { usePost } from "../hooks/usePost";
 import { WhiteBoardCard } from "./WhiteBoardCard";
+import { useNavigate } from "react-router-dom";
 
 export const ChooseWhiteboard: React.FC = () => {
   const [whiteboardToDelete, setWhiteboardToDelete] = useState<number | null>(
     null,
   );
   const [openDialog, setOpenDialog] = useState(false);
+
+  const navigate = useNavigate();
 
   const { data: whiteBoards, refetch: refetchBoardList } = useGet<WhiteBoard[]>(
     `${config.backendUrl}/whiteboard`,
@@ -53,9 +56,10 @@ export const ChooseWhiteboard: React.FC = () => {
           <WhiteBoardCard
             key={whiteBoard.id}
             name={whiteBoard.name}
-            onOpenClick={() =>
-              console.log("Open whiteboard with id: ", whiteBoard.id)
-            }
+            onOpenClick={() => {
+              console.log("Open whiteboard with id: ", whiteBoard.id);
+              navigate(`/whiteboard/${whiteBoard.id}`);
+            }}
             onDeleteClick={() => {
               handleOpenDialog(whiteBoard.id);
             }}
