@@ -9,7 +9,6 @@ import { WhiteboardPage } from "./pages/WhiteboardPage";
 function App() {
   return (
     <div className="App">
-      <h1>React Whiteboard</h1>
       <Box>
         <BrowserRouter>
           <Routes>
