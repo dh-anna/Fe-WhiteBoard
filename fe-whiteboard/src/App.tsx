@@ -1,21 +1,29 @@
-import React from 'react';
-import './App.css';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
-import HomePage from './components/home';
+import React from "react";
+import "./App.css";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HomePage } from "./pages/home";
+import { NotFoundPage } from "./pages/notFound";
+import { Box } from "@mui/material";
+import { WhiteboardPage } from "./pages/WhiteboardPage";
 
 function App() {
-    return (
-        <div className="App">
-            <header className="App-header">
-                <h1>React Whiteboard</h1>
-            </header>
-            <main>
-                <Router>
-                    <Route path="/" element={<HomePage />} />
-                </Router>
-            </main>
-        </div>
-    );
+  return (
+    <div className="App">
+      <h1>React Whiteboard</h1>
+      <Box>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route
+              path="whiteboard/:whiteboardId"
+              element={<WhiteboardPage />}
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </BrowserRouter>
+      </Box>
+    </div>
+  );
 }
 
 export default App;
