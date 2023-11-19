@@ -1,8 +1,8 @@
-# collabarative whiteboard
+# Collaborative whiteboard
 
 ## Task Identifier and Title
 **Task ID:**#23_03d
-**Title:** Collabarative whiteboard
+**Title:** Collaborative whiteboard
 
 ## Submitters
 - Bálint Kostyál
