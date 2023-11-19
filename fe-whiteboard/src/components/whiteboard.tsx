@@ -10,6 +10,7 @@ interface WhiteboardProps {
 const Whiteboard: React.FC<WhiteboardProps> = ({ width, height }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
+    const [isDrawing, setIsDrawing] = useState(false);
 
     useEffect(() => {
         if (canvasRef.current) {
@@ -32,16 +33,21 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ width, height }) => {
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
         if (context) {
+            setIsDrawing(true);
             context.beginPath();
             context.moveTo(e.clientX - canvasRef.current!.offsetLeft, e.clientY - canvasRef.current!.offsetTop);
         }
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-        if (context) {
+        if (isDrawing && context) {
             context.lineTo(e.clientX - canvasRef.current!.offsetLeft, e.clientY - canvasRef.current!.offsetTop);
             context.stroke();
         }
+    };
+
+    const handleMouseUp = () => {
+        setIsDrawing(false);
     };
 
     return (
@@ -50,6 +56,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ width, height }) => {
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
                 style={{ border: '1px solid #ccc' }}
             />
             <Button variant="contained" color="primary" onClick={handleClear} style={{ marginTop: '10px' }}>
