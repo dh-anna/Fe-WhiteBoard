@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  python-app:
+    build:
+      context: .
+      dockerfile: Dockerfile       # Replace with the name of your Dockerfile if it's different
+    ports:
+      - "5000:5000"
+    environment:
+      - ENV DATABASE_URL="sqlite:///site.db"
+      - ENV SECRET_KEY="your_secret_key"                # Set your environment variable here
+    volumes:
+      - ./instance:/app/instance           # Replace /path/on/host with the host folder you want to mount
