@@ -14,7 +14,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
 db = SQLAlchemy(app)
 
 # Dictionary to store usernames
