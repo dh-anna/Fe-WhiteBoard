@@ -1,10 +1,10 @@
 # Collaborative whiteboard
 
-## Task Identifier and Title
+## Task Id és Cím
 **Task ID:**#23_03d
-**Title:** Collaborative whiteboard
+**Cím:** Collaborative whiteboard
 
-## Submitters
+## Beadók
 - Bálint Kostyál
 - Do Hoang Anh 
 
@@ -16,8 +16,6 @@ Projektünkhöz nagy mértékben felhasználtuk a chatgpt-t, illetve a github co
 
 ## Chatgpt-s beszélgetések
 A react frontendről való beszélgetésem: https://chat.openai.com/share/04ede814-5c6c-4880-be1e-ed33da7f5178
-A többi oldal bekötése router-rel frontendre: https://chat.openai.com/share/26ab397e-f904-4f7b-ab92-1495cdf4a73c
-A frontend homepage design-ja: https://chat.openai.com/share/fa4c5f3d-80a4-4030-8b65-36104f288d36
 
 ### Screenshots
 
