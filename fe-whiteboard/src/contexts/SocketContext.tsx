@@ -45,6 +45,7 @@ export const SocketProvider: React.FC<SocketContextProps> = ({ children }) => {
       console.log("Disconnecting socket");
       newSocket.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
