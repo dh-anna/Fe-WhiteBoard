@@ -4,7 +4,7 @@ import { ToolSelector } from "./toolSelector";
 import { useSocket } from "../contexts/SocketContext";
 
 interface WhiteboardProps {
-  whiteBoardId?: string;
+  whiteBoardId: string;
 }
 
 export type DrawingTool = "pen" | "eraser";
@@ -26,7 +26,7 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
       console.log(data);
     });
     socket.emit("connect_to_whiteboard", {
-      whiteboard_id: props.whiteBoardId ?? 1,
+      whiteboard_id: props.whiteBoardId,
     });
     socket.on("draw", (data) => {
       if (!context) return;

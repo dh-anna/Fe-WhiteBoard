@@ -8,7 +8,7 @@ export const WhiteboardPage = () => {
 
   return (
     <SocketProvider>
-      <Whiteboard whiteBoardId={whiteboardId} />
+      <Whiteboard whiteBoardId={whiteboardId ?? "1"} />
     </SocketProvider>
   );
 };
