@@ -6,7 +6,11 @@
 
 ## Beadók
 - Bálint Kostyál
-- Do Hoang Anh 
+- Do Hoang Anh
+
+## Online alkalmazás
+
+https://duckboard.netlify.app/
 
 ## Projekt célja
 Csapatunk kihívás az volt, hogy egy whiteboard alkalmazást készítsen, amibe belépve a felhasználók együtt tudnak egy közös whiteboard-ot szerkeszteni. 
