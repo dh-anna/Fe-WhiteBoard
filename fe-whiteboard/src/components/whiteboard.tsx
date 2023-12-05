@@ -57,6 +57,7 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
         return;
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
   useEffect(() => {
