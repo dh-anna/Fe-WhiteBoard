@@ -25,7 +25,9 @@ export const Whiteboard: React.FC<WhiteboardProps> = (
     socket.on("message", (data) => {
       console.log(data);
     });
-    socket.emit("connect_to_whiteboard", { whiteboard_id: props.whiteBoardId });
+    socket.emit("connect_to_whiteboard", {
+      whiteboard_id: props.whiteBoardId ?? 1,
+    });
     socket.on("draw", (data) => {
       if (!context) return;
       if (data.username === username) return;
